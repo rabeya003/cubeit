@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cubeit</title>
+
+  <style>
+    :root {
+      --btn: #2f6fed;
+      --border: #d7dde6;
+      --text: #2b2f36;
+      --muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: #fff;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .wrap {
+      width: min(520px, 92vw);
+      text-align: center;
+      padding: 24px 12px;
+    }
+
+    .row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="text"] {
+      width: 150px;
+      height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    input[type="text"]:focus {
+      border-color: #9bb7ff;
+      box-shadow: 0 0 0 3px rgba(47,111,237,0.12);
+    }
+
+    button {
+      height: 34px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 4px;
+      background: var(--btn);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:active { transform: translateY(1px); }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .result {
+      margin-top: 18px;
+      font-size: 28px;
+      line-height: 1.2;
+      display: none;
+    }
+
+    .result sup {
+      font-size: 60%;
+      vertical-align: super;
+    }
+
+    .highlight {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 2px;
+      background: #cfe3ff;
+    }
+
+    .error {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #b42318;
+      display: none;
+    }
+  </style>
+
+  <!-- IMPORTANT: defer makes sure DOM is loaded before JS runs -->
+  <script defer>
+    function parseNumber(raw) {
+      // Accept: integers, decimals, negatives. Reject empty/NaN.
+      const trimmed = raw.trim();
+      if (trimmed === "") return { ok: false };
+      const n = Number(trimmed);
+      if (Number.isNaN(n)) return { ok: false };
+      return { ok: true, n, text: trimmed };
+    }
+
+    function formatCube(n) {
+      // Keeps integers clean; decimals still work.
+      const cube = n ** 3;
+      // avoid 0.30000000000000004-style outputs for simple decimals
+      const pretty = Number.isInteger(cube) ? cube.toString() : cube.toPrecision(12).replace(/\.?0+$/, "");
+      return pretty;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("number");
+      const btn = document.getElementById("cubeBtn");
+      const hint = document.getElementById("hint");
+      const result = document.getElementById("result");
+      const baseEl = document.getElementById("base");
+      const cubeEl = document.getElementById("cube");
+      const errorEl = document.getElementById("error");
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.style.display = "block";
+        result.style.display = "none";
+        hint.style.display = "block";
+      }
+
+      function showResult(baseText, cubeText) {
+        errorEl.style.display = "none";
+        hint.style.display = "none";
+        result.style.display = "block";
+        baseEl.textContent = baseText;
+        cubeEl.textContent = cubeText;
+      }
+
+      function compute() {
+        const parsed = parseNumber(input.value);
+        if (!parsed.ok) {
+          showError("Please enter a valid number.");
+          return;
+        }
+        showResult(parsed.text, formatCube(parsed.n));
+      }
+
+      btn.addEventListener("click", compute);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") compute();
+      });
+
+      // Nice default state
+      hint.style.display = "block";
+    });
+  </script>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="row">
+      <input id="number" type="text" placeholder="enter number..." autocomplete="off" />
+      <button id="cubeBtn" type="button">Cube</button>
+    </div>
+
+    <div class="hint" id="hint">Your result will appear here...</div>
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+      <span id="base">0</span><sup>3</sup> = <span class="highlight" id="cube">0</span>
+    </div>
+  </main>
+</body>
+</html>
